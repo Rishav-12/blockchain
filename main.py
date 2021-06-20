@@ -38,11 +38,38 @@ class Blockchain():
 		new_block = Block(self.get_last_block().index + 1, self.get_last_block().hash, transactions)
 		self.chain.append(new_block)
 
-blockchain = Blockchain()
+	def is_valid(self):
+		for i in range(1, len(self.chain)): # We start with index 1 since index 0 is the genesis block
+			current_block = self.chain[i]
+			prev_block = self.chain[i - 1]
 
-blockchain.create_genesis_block()
-blockchain.create_block({ 'sender' : "1", 'recipient' : "Rishav", 'amount' : 4 })
-blockchain.create_block({ 'sender' : "2", 'recipient' : "Sumedha", 'amount' : 6 })
-blockchain.create_block({ 'sender' : "3", 'recipient' : "Tanya", 'amount' : 3 })
+			if current_block.index <= prev_block.index:
+				return False
 
-print(blockchain.chain)
+			elif current_block.hash != current_block.calculate_hash():
+				return False
+
+			elif current_block.prev_hash != prev_block.hash:
+				return False
+
+		return True
+
+def test():
+	blockchain = Blockchain()
+
+	blockchain.create_genesis_block()
+	blockchain.create_block({ 'sender' : "1", 'recipient' : "Rishav", 'amount' : 4 })
+	blockchain.create_block({ 'sender' : "2", 'recipient' : "Sumedha", 'amount' : 6 })
+	blockchain.create_block({ 'sender' : "3", 'recipient' : "Tanya", 'amount' : 3 })
+
+	# print(blockchain.chain)
+
+	print("Is chain valid? " + str(blockchain.is_valid()))
+
+	blockchain.chain[2].transactions['amount'] = 20
+	blockchain.chain[2].hash = blockchain.chain[2].calculate_hash()
+
+	print("Is chain valid? " + str(blockchain.is_valid()))
+
+if __name__ == '__main__':
+	test()
