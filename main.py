@@ -8,11 +8,19 @@ class Block():
 		self.timestamp = 'time.time()' # We use a string so that the hash does not change everytime we run the program
 		self.prev_hash = prev_hash
 		self.transactions = transactions
+		self.nonce = 0
 		self.hash = self.calculate_hash()
 
 	def calculate_hash(self):
-		block_data = f'{self.index}{self.timestamp}{self.prev_hash}{json.dumps(self.transactions)}'
+		block_data = f'{self.index}{self.timestamp}{self.prev_hash}{json.dumps(self.transactions)}{self.nonce}'
 		return hashlib.sha256(block_data.encode()).hexdigest()
+
+	def mine_block(self, difficulty):
+		while not self.hash.startswith("0" * difficulty):
+			self.nonce += 1
+			self.hash = self.calculate_hash()
+
+		print(f"Block mined successfully: {self.hash}")
 
 	def __repr__(self):
 		return json.dumps({
@@ -26,6 +34,7 @@ class Block():
 class Blockchain():
 	def __init__(self):
 		self.chain = []
+		self.difficulty = 4
 
 	def create_genesis_block(self):
 		genesis_block = Block(0, "0", "Initial block")
@@ -36,6 +45,7 @@ class Blockchain():
 
 	def create_block(self, transactions):
 		new_block = Block(self.get_last_block().index + 1, self.get_last_block().hash, transactions)
+		new_block.mine_block(self.difficulty)
 		self.chain.append(new_block)
 
 	def is_valid(self):
@@ -58,18 +68,17 @@ def test():
 	blockchain = Blockchain()
 
 	blockchain.create_genesis_block()
+
+	print("Mining block 1...")
 	blockchain.create_block({ 'sender' : "1", 'recipient' : "Rishav", 'amount' : 4 })
+
+	print("Mining block 2...")
 	blockchain.create_block({ 'sender' : "2", 'recipient' : "Sumedha", 'amount' : 6 })
+
+	print("Mining block 3...")
 	blockchain.create_block({ 'sender' : "3", 'recipient' : "Tanya", 'amount' : 3 })
 
-	# print(blockchain.chain)
-
-	print("Is chain valid? " + str(blockchain.is_valid()))
-
-	blockchain.chain[2].transactions['amount'] = 20
-	blockchain.chain[2].hash = blockchain.chain[2].calculate_hash()
-
-	print("Is chain valid? " + str(blockchain.is_valid()))
+	# print(blockchain.chain) # <- uncomment to see details of the blockchain
 
 if __name__ == '__main__':
 	test()
